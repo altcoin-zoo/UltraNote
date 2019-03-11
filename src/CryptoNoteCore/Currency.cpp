@@ -634,7 +634,8 @@ difficulty_type Currency::nextDifficulty2(std::vector<uint64_t> timestamps,
   uint64_t nextDiff = (low + adjustedTotalTimespan - 1) / adjustedTotalTimespan;
  if (nextDiff < 1)  {
   nextDiff = 1;
-  return nextDiff; }
+  }
+  return nextDiff; 
  }
 
 //@nesterow: Third diff algo, zawy's LWMA
