@@ -870,7 +870,7 @@ difficulty_type Blockchain::get_next_difficulty_for_alternative_chain(const std:
   if(version == 0){
     difficiltyBlocksCount = static_cast<uint64_t>(m_currency.difficultyBlocksCount1());
   }
-  else if(version == 1){
+  else if(version >= 1){
     difficiltyBlocksCount = static_cast<uint64_t>(m_currency.difficultyBlocksCount());
   }
   
