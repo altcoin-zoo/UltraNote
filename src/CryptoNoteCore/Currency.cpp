@@ -1,7 +1,7 @@
 // Copyright (c) 2011-2017 The Cryptonote developers
 // Copyright (c) 2014-2017 XDN developers
 // Copyright (c) 2016-2017 BXC developers
-// Copyright (c) 2017 UltraNote developers
+// Copyright (c) 2017-219 UltraNote developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -508,6 +508,9 @@ bool Currency::parseAmount(const std::string& str, uint64_t& amount) const {
 
 
 // @nesterow: old difficulty alhorithm, i.e. 1st
+//
+// HF version 0 = Monero DAA
+
 difficulty_type Currency::nextDifficulty1(std::vector<uint64_t> timestamps,
   std::vector<difficulty_type> cumulativeDifficulties) const {
   assert(m_difficultyWindow >= 2);
@@ -554,6 +557,8 @@ difficulty_type Currency::nextDifficulty1(std::vector<uint64_t> timestamps,
 }
 
 // @nesterow: 2nd diff algo, Sumokoin impl
+//
+// HF v1 = Zawy/Sumokoin Poisson
 difficulty_type Currency::nextDifficulty2(std::vector<uint64_t> timestamps,
   std::vector<difficulty_type> cumulativeDifficulties) const {
   assert(m_difficultyWindow >= 2);
@@ -632,13 +637,15 @@ difficulty_type Currency::nextDifficulty2(std::vector<uint64_t> timestamps,
   }
   
   uint64_t nextDiff = (low + adjustedTotalTimespan - 1) / adjustedTotalTimespan;
- if (nextDiff < 1)  {
+ if (nextDiff < 1) {
   nextDiff = 1;
   }
-  return nextDiff; 
+  return nextDiff;
  }
 
 //@nesterow: Third diff algo, zawy's LWMA
+//
+// HF v3 - Zawy LWMA
 
 // LWMA difficulty algorithm
 // Copyright (c) 2017-2018 Zawy
@@ -696,12 +703,19 @@ difficulty_type Currency::nextDifficulty3(std::vector<uint64_t> timestamps,
  //@karbowanec: minimum limit
   logger(TRACE) << "Timestamps size: " << timestamps.size();
   logger(TRACE) << "Block expected diff (next_difficulty LWMA-1): " << next_difficulty << ".  (TESTNET DEBUGGING)";
+
   if (next_difficulty < 100000) {
-    next_difficulty = 100000;
-  }
+    next_difficulty = 100000; }
+
   return next_difficulty;
 }
 
+
+// HFv4 - LWMA-2, some remnants of LWMA-1 mixed in too...
+// Note: version 4b "lower" boolean parameter needed to remove
+// lower bound from L708 because it is screwing things up
+// We really should NOT need a lower limit anyway, but I
+// assume it was put here to hardcode diff through a fork..
 
 // LWMA-2 difficulty algorithm
 // Copyright (c) 2017-2018 Zawy, MIT License
@@ -710,31 +724,68 @@ difficulty_type Currency::nextDifficulty3(std::vector<uint64_t> timestamps,
 // Make sure timestamps and cumulativeDifficulties vectors are sized N+1
 // and most recent element (Nth one) is most recently solved block.
 // difficulty_type should be uint64_t
-difficulty_type Currency::nextDifficulty(std::vector<uint64_t> timestamps, std::vector<difficulty_type> cumulativeDifficulties) const {
+difficulty_type Currency::nextDifficulty(std::vector<uint64_t> timestamps, std::vector<difficulty_type> cumulativeDifficulties, bool lower) const {
     int64_t  T = parameters::DIFFICULTY_TARGET;
     int64_t  N = parameters::DIFFICULTY_WINDOW_V3 - 1; // N=45, 60, and 90 for T=600, 120, 60.
     int64_t  FTL = static_cast<int64_t>(parameters::CRYPTONOTE_BLOCK_FUTURE_TIME_LIMIT_V3); // FTL=3xT
     int64_t  L(0), ST, sum_3_ST(0), next_D, prev_D;
 
+  if ( timestamps.size() < 4)
+  {
+    return 1;
+  } else if(
+    static_cast<int64_t>(timestamps.size()) < N + 1 // -Wsign-compare
+  )
+  {
+    N = timestamps.size() - 1;
+  }
+  else
+  {
+    timestamps.resize(N + 1);
+    cumulativeDifficulties.resize(N + 1);
+  }
+
+  const double k = N * (N + 1) / 2;
+
+  double LWMA(0), sum_inverse_D(0);
+  int64_t solveTime(0);
+  uint64_t difficulty(0);
+
+  // Loop through N most recent blocks. N is most recently solved block.
+    for (int64_t i = 1; i <= N; i++) {
+      solveTime = static_cast<int64_t>(timestamps[i]) - static_cast<int64_t>(timestamps[i - 1]);
+      solveTime = std::min<int64_t>((T*7), std::max<int64_t>(solveTime, (-7 * T)));
+      difficulty = cumulativeDifficulties[i] - cumulativeDifficulties[i - 1];
+      LWMA += (int64_t)(solveTime * i) / k;
+      sum_inverse_D += 1 / static_cast<double>(difficulty);
+  }
+
     logger(TRACE) << "Timestamps size: " << timestamps.size() << ", expected more than " << static_cast<uint64_t>(N);
 
-    if (timestamps.size() <= static_cast<uint64_t>(N))
+    if ((lower) && (timestamps.size() <= static_cast<uint64_t>(N)))
     {
-        return 100000;
+        uint64_t difficulty_guess = 10000;
+        return difficulty_guess;
     }
 
-  //  uint64_t initial_difficulty_guess = 100;
-  //  if (timestamps.size() <= static_cast<uint64_t>(N)) {
-  //      return initial_difficulty_guess;
-  //  }
-    
+   else if ((!lower) && (timestamps.size() <= static_cast<uint64_t>(N)))
+    {
+        uint64_t difficulty_guess = 100000;
+        return difficulty_guess;
+    }
+
+//    uint64_t initial_difficulty_guess = 100;
+//    if (timestamps.size() <= static_cast<uint64_t>(N)) {
+//        return initial_difficulty_guess;
+//    }
+
     for ( int64_t i = 1; i <= N; i++) {
         ST = std::max(-6*T, std::min( static_cast<int64_t>(timestamps[i]) - static_cast<int64_t>(timestamps[i - 1]), 6*T));
         L +=  ST * i ;
         if ( i > N-3 ) { sum_3_ST += ST; }
     }
     next_D = ((cumulativeDifficulties[N] - cumulativeDifficulties[0])*T*(N+1)*99)/(100*2*L);
-        
+
     // implement LWMA-2 changes from LWMA
     prev_D = cumulativeDifficulties[N] - cumulativeDifficulties[N-1];
     // If N !=60 adjust 3 integers: 67*N/60, 150*60/N, 110*60/N
