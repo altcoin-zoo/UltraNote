@@ -708,7 +708,7 @@ difficulty_type Blockchain::getDifficultyForNextBlock() {
 
   uint32_t height = getCurrentBlockchainHeight() - 1;
   bool lower = false;
-    if (version >= 3 && height >= 352454) {
+    if (version >= 3 && height >= 330000) {
 	    lower = true; }
   
   for (; offset < m_blocks.size(); offset++) {
