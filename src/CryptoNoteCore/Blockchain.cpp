@@ -1,7 +1,7 @@
 // Copyright (c) 2011-2017 The Cryptonote developers
 // Copyright (c) 2014-2017 XDN developers
 // Copyright (c) 2016-2017 BXC developers
-// Copyright (c) 2017 UltraNote developers
+// Copyright (c) 2017-2019 UltraNote developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -696,7 +696,7 @@ difficulty_type Blockchain::getDifficultyForNextBlock() {
   else if(version == 2){
     difficiltyBlocksCount = static_cast<uint64_t>(m_currency.difficultyBlocksCount3());
   }
-  else if(version == 3 || version == 4){
+  else if(version >= 3){
     difficiltyBlocksCount = static_cast<uint64_t>(m_currency.difficultyBlocksCount());
   }
 
@@ -706,20 +706,30 @@ difficulty_type Blockchain::getDifficultyForNextBlock() {
     ++offset;
   }
 
+  uint32_t height = getCurrentBlockchainHeight() - 1;
+  bool lower = false;
+    if (version >= 3 && height >= 330000) {
+	    lower = true; }
+  
   for (; offset < m_blocks.size(); offset++) {
     timestamps.push_back(m_blocks[offset].bl.timestamp);
     commulative_difficulties.push_back(m_blocks[offset].cumulative_difficulty);
   }
-  if(version == 0){
+  if (version < 1) {
     return m_currency.nextDifficulty1(timestamps, commulative_difficulties);
   }
-  else if(version == 1){
+  else if (version == 1) {
     return m_currency.nextDifficulty2(timestamps, commulative_difficulties);
   }
-  else if(version == 2){
+  else if (version == 2) {
     return m_currency.nextDifficulty3(timestamps, commulative_difficulties);
   }
-  return m_currency.nextDifficulty(timestamps, commulative_difficulties);
+
+  if (lower) {
+    return m_currency.nextDifficulty(timestamps, commulative_difficulties, true);  }
+
+    return m_currency.nextDifficulty(timestamps, commulative_difficulties, false);
+
 }
 
 uint64_t Blockchain::getCoinsInCirculation() {
@@ -870,7 +880,7 @@ difficulty_type Blockchain::get_next_difficulty_for_alternative_chain(const std:
   if(version == 0){
     difficiltyBlocksCount = static_cast<uint64_t>(m_currency.difficultyBlocksCount1());
   }
-  else if(version == 1){
+  else if(version >= 1){
     difficiltyBlocksCount = static_cast<uint64_t>(m_currency.difficultyBlocksCount());
   }
   
@@ -914,16 +924,26 @@ difficulty_type Blockchain::get_next_difficulty_for_alternative_chain(const std:
     }
   }
   ///!!!
-  if(version == 0){
+   uint32_t height = getCurrentBlockchainHeight() - 1;
+   bool lower = false;
+   if ((version >= 3) && height >= 352454) {
+	    lower = true; }
+
+  if (version < 1) {
     return m_currency.nextDifficulty1(timestamps, commulative_difficulties);
   }
-  else if(version == 1){
+  else if (version == 1) {
     return m_currency.nextDifficulty2(timestamps, commulative_difficulties);
   }
-  else if(version == 2){
+  else if (version == 2) {
     return m_currency.nextDifficulty3(timestamps, commulative_difficulties);
   }
-  return m_currency.nextDifficulty(timestamps, commulative_difficulties);
+
+  if (lower) {
+    return m_currency.nextDifficulty(timestamps, commulative_difficulties, true);  }
+
+    return m_currency.nextDifficulty(timestamps, commulative_difficulties, false);
+
 }
 
 bool Blockchain::prevalidate_miner_transaction(const Block& b, uint32_t height) {
