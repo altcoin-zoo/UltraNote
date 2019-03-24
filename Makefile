@@ -1,39 +1,17 @@
-all: all-release
+set(UPNPC_BUILD_STATIC ON CACHE BOOL "Build static library")
+set(UPNPC_BUILD_SHARED OFF CACHE BOOL "Build shared library")
+set(UPNPC_BUILD_TESTS OFF CACHE BOOL "Build test executables")
 
-cmake-debug:
-	mkdir -p build/debug
-	cd build/debug && cmake -D CMAKE_BUILD_TYPE=Debug ../..
+add_subdirectory(miniupnpc)
+if(GTEST)
+  add_subdirectory(gtest)
+  set_property(TARGET upnpc-static gtest gtest_main PROPERTY FOLDER "external")
+elseif(NOT GTEST)
+  set_property(TARGET upnpc-static PROPERTY FOLDER "external")
+endif()
 
-build-debug: cmake-debug
-	cd build/debug && $(MAKE)
-
-test-debug: build-debug
-	cd build/debug && $(MAKE) test
-
-all-debug: build-debug
-
-cmake-release:
-	mkdir -p build/release
-	cd build/release && cmake -D CMAKE_BUILD_TYPE=Release ../..
-
-build-release: cmake-release
-	cd build/release && $(MAKE)
-
-build-static: 
-	mkdir -p build/static
-	cd build/static && cmake -D CMAKE_BUILD_TYPE=Release ../..
-	cd build/static && $(MAKE) SHARED=0 CC='gcc -static'
-
-test-release: build-release
-	cd build/release && $(MAKE) test
-
-all-release: build-release
-
-clean:
-	rm -rf build
-
-tags:
-	ctags -R --sort=1 --c++-kinds=+p --fields=+iaS --extra=+q --language-force=C++ src contrib tests/gtest
-
-.PHONY: all cmake-debug build-debug test-debug all-debug cmake-release build-release test-release all-release clean tags
-
+if(MSVC)
+  set_property(TARGET upnpc-static APPEND_STRING PROPERTY COMPILE_FLAGS " -wd4244 -wd4267")
+elseif(NOT MSVC)
+  set_property(TARGET upnpc-static APPEND_STRING PROPERTY COMPILE_FLAGS " -Wno-unused-result -Wno-unused-value")
+endif()
