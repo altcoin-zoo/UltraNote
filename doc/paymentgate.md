@@ -357,12 +357,7 @@ Request:
 #### Method `reset()`
 Re-sync cointainer starting from 0 block.
 
-```
 
-
-
-
-```
 #### Method `save()`
 Save current container state. Do it before making reserve copies or reboots.
 
