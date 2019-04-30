@@ -347,48 +347,7 @@ Request:
 	"jsonrpc": "2.0", 
 	"id": "1"
 }
-```
 
-#### Method: `sendTransaction( .., ttl:Int, extra:String, text:String )`
-
-UltraNote `walletd` daemon allows to send arbitraty data within transaction extra. It can be any text string.
-Best application for this is sending messages. *It is not encrypted* unless you use encryption on the client side.
-We added this feature to support message exchange for online services using E2E clientside encryption. 
-*Recommended maximum message size is 50kb*
-
-In order to send transaction with data you have to set `fee` to `0` and specify `ttl` in seconds (after 1970).
-Now, because we need to keep compatibility with desktop messaging we have to add `extra` field with a placeholder string:
-
-_extra: "01fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff04fffffffffff" _
-
-And finally we have to specify text with arbitrary data. Be aware that you should encrypt it yourself since it is not wallet encrypted messaging:
-
-_text: "encrypted string"_
-
-Also. Since the data is sent in transaction you should send a small amount to recipient.
-
-Request:
-```json
-{
-	"method":"sendTransaction",
-	"params": {
-		"addresses":["Xun3ZtBPE7eYvz1Uokg9zg9m8UJsYdWFyEFT6Mmk4snXgMeaSfAQRGKhHPSR7X6nPG5DVpjrpNJ2Jg7Ej4DV3xgL5PEsCMBnGV"],
-		"anonymity": 0,
-		"fee": 0,
-		"ttl": 1513975016,
-		"extra": "01fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff04fffffffffff",
-		"text" : "encrypted string",
-		"transfers":[
-			{
-				"amount":1000,
-				"address":"Xun3qFybMCTcqzexD68QMjDoHUDUqUCWEJ82svTJ5vtbYF652s7o3njYe2AvyWtSL2iiiELby9mGH6dkQZryga4P4fVVUmGVMk"
-			}
-		]
-	},
-	"jsonrpc": "2.0", 
-	"id": "1"
-}
-```
 
 
 ------------------------------------------------------------------------------------------------------
