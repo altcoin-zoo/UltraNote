@@ -18,6 +18,7 @@
 #include <System/Timer.h>
 #include <System/InterruptedException.h>
 #include "Common/Util.h"
+#include <Common/Base58.h>
 
 #include "crypto/crypto.h"
 #include "CryptoNote.h"
@@ -609,14 +610,28 @@ std::error_code WalletService::deleteAddress(const std::string& address) {
   return std::error_code();
 }
 
-std::error_code WalletService::getSpendkeys(const std::string& address, std::string& publicSpendKeyText, std::string& secretSpendKeyText) {
+std::error_code WalletService::getSpendkeys(const std::string& address, std::string& publicSpendKeyText, std::string& secretSpendKeyText, std::string& guiKeyText) {
   try {
     System::EventLock lk(readyEvent);
 
     CryptoNote::KeyPair key = wallet.getAddressSpendKey(address);
-
     publicSpendKeyText = Common::podToHex(key.publicKey);
     secretSpendKeyText = Common::podToHex(key.secretKey);
+
+    CryptoNote::KeyPair viewKey = wallet.getViewKey();
+
+    CryptoNote::AccountPublicAddress addr {
+        key.publicKey,
+        viewKey.publicKey,
+    };
+
+    CryptoNote::AccountKeys keys {
+        addr,
+        key.secretKey,
+        viewKey.secretKey,
+    };
+
+    guiKeyText = Tools::Base58::encode_addr(CryptoNote::parameters::CRYPTONOTE_PUBLIC_ADDRESS_BASE58_PREFIX, std::string(reinterpret_cast<char*>(&keys), sizeof(keys)));
 
   } catch (std::system_error& x) {
     logger(Logging::WARNING) << "Error while getting spend key: " << x.what();
@@ -675,11 +690,13 @@ std::error_code WalletService::getBlockHashes(uint32_t firstBlockIndex, uint32_t
   return std::error_code();
 }
 
-std::error_code WalletService::getViewKey(std::string& viewSecretKey) {
+std::error_code WalletService::getViewKey(std::string& viewSecretKey, std::string& viewPublicKey) {
   try {
     System::EventLock lk(readyEvent);
+
     CryptoNote::KeyPair viewKey = wallet.getViewKey();
     viewSecretKey = Common::podToHex(viewKey.secretKey);
+    viewPublicKey = Common::podToHex(viewKey.publicKey);
   } catch (std::system_error& x) {
     logger(Logging::WARNING) << "Error while getting view key: " << x.what();
     return x.code();
