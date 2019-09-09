@@ -41,6 +41,7 @@ struct GetViewKey {
 
   struct Response {
     std::string viewSecretKey;
+    std::string viewPublicKey;
 
     void serialize(CryptoNote::ISerializer& serializer);
   };
@@ -110,6 +111,7 @@ struct GetSpendKeys {
   struct Response {
     std::string spendSecretKey;
     std::string spendPublicKey;
+    std::string guiKey;
 
     void serialize(CryptoNote::ISerializer& serializer);
   };
