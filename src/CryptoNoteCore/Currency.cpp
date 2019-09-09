@@ -129,15 +129,19 @@ bool Currency::generateGenesisBlock() {
 
 uint64_t Currency::baseRewardFunction(uint64_t alreadyGeneratedCoins, uint32_t height) const {
   if (height == 1) return ICO_BLOCK_REWARD;
+
+  if (height < BLOCK_REWARD_V2_HEIGHT) {
+    uint64_t incrIntervals = static_cast<uint64_t>(height) / REWARD_INCREASE_INTERVAL;
+    assert(incrIntervals < POWERS_OF_TEN.size());
+
+    uint64_t base_reward = START_BLOCK_REWARD * POWERS_OF_TEN[incrIntervals];	
+    base_reward = (std::min)(base_reward, MAX_BLOCK_REWARD);
+    base_reward = (std::min)(base_reward, m_moneySupply - alreadyGeneratedCoins);
   
-  uint64_t incrIntervals = static_cast<uint64_t>(height) / REWARD_INCREASE_INTERVAL;
-  assert(incrIntervals < POWERS_OF_TEN.size());
-  
-  uint64_t base_reward = START_BLOCK_REWARD * POWERS_OF_TEN[incrIntervals];	
-  base_reward = (std::min)(base_reward, MAX_BLOCK_REWARD);
-  base_reward = (std::min)(base_reward, m_moneySupply - alreadyGeneratedCoins);
-  
-  return base_reward;
+    return base_reward;
+  } else {
+    return BLOCK_REWARD_V2;
+  }
 }
 
 uint32_t Currency::upgradeHeight(uint8_t majorVersion) const {
