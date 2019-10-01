@@ -5,7 +5,7 @@ Depending on how your system accounts user funds there are two ways to integrate
 
 UltraNote distributes two wallet solutions: `ultranotewallet` and `walletd`. Both daemons are capable of recieving and sending mass payouts. The difference is that `walletd` provides multiple wallet addresses when `ultranotewallet` provides only one wallet address. 
 
-In this document we'll show how to use  `ultranotewallet`. If you need a multi-wallet solution (one wallet per user) refer to [paymentgate documentation](./paymentgate.md). Or as an example of rest microservice refer to [ultra-rest](https://github.com/xun-project/ultra-rest).
+In this document we'll show how to use  `ultranotewallet`. If you need a multi-wallet solution (one wallet per user) refer to [paymentgate documentation](./paymentgate.md), use the [PHP Wrapper](https://github.com/xun-project/UltraNote-RPC-PHP) or use the [WordPress Plugin](https://github.com/xun-project/UltraNote-WP-PaymentGateway).
 
 
 
@@ -65,10 +65,6 @@ Response:
 	}
 }
 ```
-
-
-### Method: `getbalance()`
-
 
 
 ### Use cases

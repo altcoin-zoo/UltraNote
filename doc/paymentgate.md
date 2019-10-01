@@ -13,7 +13,7 @@ Natural way to use it in your application is JSON RPC. Popular programming lagua
 ```
 
 
-#### 2. The daemon has plenty of programm options, but the best way is to use a configuration file.
+#### 2. The daemon has plenty of program options, but the best way is to use a configuration file.
 ```
 ~$ walletd --config=/etc/paymentgate.conf
 ```
@@ -61,7 +61,6 @@ local=1
 *Configure firewall rules if you run it in a container or virtual environment
 
 *Do use a https proxy if you run it outside host environment  
-
 
 
 -------------------------------------------------------------------------------------------
