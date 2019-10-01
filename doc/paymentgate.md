@@ -263,6 +263,35 @@ _Get transactions from blockchain after the service was down_
 
 -------------------------------------------------------------------------------------------
 
+#### Method: `getSpendKeys( address:String )`
+
+Request:
+```json
+{
+    "method":"getSpendKeys",
+    "params": {
+        "address":"Xun3sfN5CzibcUqXqmqMFngzwaPS15iEySg2SVggQPArXzDVpJCHM5yhHPSR7X6nPG5DVpjrpNJ2Jg7Ej4DV3xgL5PEsCwEgBs"
+    },
+    "jsonrpc": "2.0", 
+    "id": "1"
+}
+```
+
+Response:
+```json
+{
+    "id":"1",
+    "jsonrpc":"2.0",
+    "result":{
+        "spendPublicKey":"f4f****5fcc",
+        "spendSecretKey":"86c397****a04",
+        "guiKey":"Xun3rU****xhCf16"
+    }
+}
+```
+
+-------------------------------------------------------------------------------------------
+
 
 #### Method: `getTransaction( transactionHash:String )`
 
