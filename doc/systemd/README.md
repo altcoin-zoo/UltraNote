@@ -17,3 +17,7 @@ Stopping: `sudo systemctl stop ultranoted`
 Starting: `sudo systemctl start ultranoted`
 
 *Same process goes for `ultranote-walletd.service`*
+
+### Running as a remote node use
+
+`ExecStart=/usr/bin/ultranoted --data-dir=/home/YOUR_USER/.UltraNote --rpc-bind-ip=0.0.0.0 --rpc-bind-port=31000 
