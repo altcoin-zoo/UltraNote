@@ -20,4 +20,4 @@ Starting: `sudo systemctl start ultranoted`
 
 ### Running as a remote node use
 
-`ExecStart=/usr/bin/ultranoted --data-dir=/home/YOUR_USER/.UltraNote --rpc-bind-ip=0.0.0.0 --rpc-bind-port=31000 
+`ExecStart=/usr/bin/ultranoted --data-dir=/home/YOUR_USER/.UltraNote --rpc-bind-ip=0.0.0.0 --rpc-bind-port=31000`
