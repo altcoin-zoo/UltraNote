@@ -16,6 +16,7 @@
 #endif
 #include <winsock2.h>
 #include "ErrorMessage.h"
+#include <stdexcept>
 
 namespace System {
 
