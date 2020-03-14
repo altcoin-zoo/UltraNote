@@ -1,4 +1,6 @@
-## Building UltraNote
+## DO NOT BUILD FROM THIS CODE .. A FORK TO ROLL BACK THE BLOCKS TO 2020/03/11 IN PROGRESS
+
+
 ![alt text](https://www.ultranote.org/wp-content/uploads/2019/03/ultra.png)
 
 On Apple or Linux and can't get readline installed? Run cmake with `cmake .. -DFORCE_READLINE=FALSE` to disable readline support.
